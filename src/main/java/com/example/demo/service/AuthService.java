@@ -25,13 +25,14 @@ public class AuthService {
     }
 
     public String login(User user) {
-        User existing = userRepository.findByUsername(user.getUsername())
-                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        // Dans login()
+User existing = userRepository.findByEmail(user.getEmail())
+        .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
-        if (!passwordEncoder.matches(user.getPassword(), existing.getPassword())) {
-            throw new RuntimeException("Mot de passe incorrect");
-        }
+if (!passwordEncoder.matches(user.getPassword(), existing.getPassword())) {
+    throw new RuntimeException("Mot de passe incorrect");
+}
 
-        return jwtUtil.generateToken(existing.getUsername());
+        return jwtUtil.generateToken(existing.getEmail());
     }
 }

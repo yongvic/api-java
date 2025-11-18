@@ -1,22 +1,44 @@
-### 1. Inscription
+### Inscription par téléphone
 POST http://localhost:8080/api/auth/register
 Content-Type: application/json
 
 {
-  "username": "chocoa",
+  "nom": "Kamga",
+  "prenom": "Paul",
+  "telephone": "690123456",
+  "password": "monpass123"
+}
+
+### Inscription par email
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "nom": "Dupont",
+  "prenom": "Marie",
+  "email": "marie@gmail.com",
   "password": "123456"
 }
 
-### 2. Connexion → récupère le token
+### Connexion par téléphone
 POST http://localhost:8080/api/auth/login
 Content-Type: application/json
 
 {
-  "username": "chocoa",
+  "telephone": "690123456",
+  "password": "monpass123"
+}
+
+### Connexion par email
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "marie@gmail.com",
   "password": "123456"
 }
 
 ### 3. Accès route protégée → colle le token ici
 ### Accès à la route protégée
 GET http://localhost:8080/api/profile
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaG9jb2EiLCJpYXQiOjE3NjMzNzMyODIsImV4cCI6MTc2MzM3Njg4Mn0.s5j9xMXKCIvX1T89EXXc4S2V__g2XD7o45siAVHZoNs
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzb3BoaWUubWFydGluQGdtYWlsLmNvbSIsImlhdCI6MTc2MzQ1MTA0NSwiZXhwIjoxNzYzNDU0NjQ1fQ.C9eP8NP0FeGuN35MmJgWGmzNIDBL55CitnY3mRc5nDQ
