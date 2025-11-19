@@ -1,58 +1,178 @@
-// app/register/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
+type Country = {
+  id: number;
+  code: string;
+  name: string;
+  flagEmoji: string;
+};
+
 export default function Register() {
-  const [useEmail, setUseEmail] = useState(true);
+  const [mode, setMode] = useState<"email" | "phone">("email"); // email ou phone
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [form, setForm] = useState({
-    nom: "", prenom: "", email: "", telephone: "", password: ""
+    nom: "",
+    prenom: "",
+    email: "",
+    telephone: "",
+    password: "",
   });
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (e: any) => {
+  useEffect(() => {
+    axios.get("http://localhost:8080/api/countries").then((res) => {
+      setCountries(res.data);
+      const togo = res.data.find((c: Country) => c.code === "+228");
+      if (togo) setSelectedCountry(togo);
+    });
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+
+    const payload: any = {
+      nom: form.nom.trim(),
+      prenom: form.prenom.trim(),
+      password: form.password,
+    };
+
+    if (mode === "email") {
+      payload.email = form.email.trim();
+    } else {
+      payload.telephone = form.telephone.trim();
+      payload.countryId = selectedCountry?.id;
+    }
+
     try {
-      await axios.post("http://localhost:8080/api/auth/register", form);
-      alert("Compte créé avec succès !");
+      await axios.post("http://localhost:8080/api/auth/register", payload);
+      alert("Inscription réussie ! 🎉");
       router.push("/login");
     } catch (err: any) {
-      alert(err.response?.data || "Erreur");
+      alert(err.response?.data || "Erreur d'inscription");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0C4A6E] to-[#10B981] flex items-center justify-center p-4">
-      <div className="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md">
-        <h1 className="text-4xl font-bold text-center text-[#0C4A6E] mb-8">Investore</h1>
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{
+        backgroundImage: "url('/th.jpeg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      <div className="absolute inset-0 bg-black/50" />
 
-        <div className="flex justify-center mb-6">
-          <button onClick={() => setUseEmail(true)} className={`px-6 py-2 rounded-l-lg ${useEmail ? "bg-[#0C4A6E] text-white" : "bg-gray-200"}`}>
+      <div className="relative z-10 bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-10 w-full max-w-lg">
+        <h1 className="text-5xl font-bold text-center text-[#0C4A6E] mb-4">Investore</h1>
+        <p className="text-center text-gray-600 mb-8">Crée ton compte en 30 secondes</p>
+
+        {/* === LES 2 BOUTONS DE CHOIX === */}
+        <div className="flex justify-center mb-8">
+          <button
+            onClick={() => setMode("email")}
+            className={`px-10 py-4 text-lg font-semibold rounded-l-2xl transition ${
+              mode === "email" ? "bg-[#0C4A6E] text-white" : "bg-gray-200 text-gray-700"
+            }`}
+          >
             Email
           </button>
-          <button onClick={() => setUseEmail(false)} className={`px-6 py-2 rounded-r-lg ${!useEmail ? "bg-[#0C4A6E] text-white" : "bg-gray-200"}`}>
+          <button
+            onClick={() => setMode("phone")}
+            className={`px-10 py-4 text-lg font-semibold rounded-r-2xl transition ${
+              mode === "phone" ? "bg-[#0C4A6E] text-white" : "bg-gray-200 text-gray-700"
+            }`}
+          >
             Téléphone
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input required placeholder="Nom" className="w-full p-4 border rounded-xl" onChange={e => setForm({...form, nom: e.target.value})} />
-          <input required placeholder="Prénom" className="w-full p-4 border rounded-xl" onChange={e => setForm({...form, prenom: e.target.value})} />
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="grid grid-cols-2 gap-4">
+            <input
+              required
+              placeholder="Nom"
+              className="p-4 border-2 rounded-xl focus:border-[#0C4A6E] transition"
+              onChange={(e) => setForm({ ...form, nom: e.target.value })}
+            />
+            <input
+              required
+              placeholder="Prénom"
+              className="p-4 border-2 rounded-xl focus:border-[#0C4A6E] transition"
+              onChange={(e) => setForm({ ...form, prenom: e.target.value })}
+            />
+          </div>
 
-          {useEmail ? (
-            <input required type="email" placeholder="Email" className="w-full p-4 border rounded-xl" onChange={e => setForm({...form, email: e.target.value, telephone: ""})} />
-          ) : (
-            <input required placeholder="Téléphone (ex: 69012345678)" className="w-full p-4 border rounded-xl" onChange={e => setForm({...form, telephone: e.target.value, email: ""})} />
+          {/* === FORMULAIRE EMAIL === */}
+          {mode === "email" && (
+            <input
+              required
+              type="email"
+              placeholder="ton@email.com"
+              className="w-full p-4 border-2 rounded-xl focus:border-[#0C4A6E] transition"
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+            />
           )}
 
-          <input required type="password" placeholder="Mot de passe" className="w-full p-4 border rounded-xl" onChange={e => setForm({...form, password: e.target.value})} />
+          {/* === FORMULAIRE TÉLÉPHONE === */}
+          {mode === "phone" && (
+            <div className="flex gap-3">
+              <select
+                value={selectedCountry?.id || ""}
+                onChange={(e) => {
+                  const country = countries.find((c) => c.id === Number(e.target.value));
+                  setSelectedCountry(country || null);
+                }}
+                className="p-4 border-2 rounded-xl bg-white w-40"
+              >
+                {countries.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.flagEmoji} {c.code}
+                  </option>
+                ))}
+              </select>
+              <input
+                required
+                placeholder="91480288"
+                className="flex-1 p-4 border-2 rounded-xl focus:border-[#0C4A6E] transition"
+                onChange={(e) => setForm({ ...form, telephone: e.target.value })}
+              />
+            </div>
+          )}
 
-          <button type="submit" className="w-full bg-[#10B981] text-white py-4 rounded-xl font-bold hover:bg-[#0C4A6E] transition text-lg">
-            Créer mon compte Investore
+          <input
+            required
+            type="password"
+            placeholder="Mot de passe sécurisé"
+            className="w-full p-4 border-2 rounded-xl focus:border-[#0C4A6E] transition"
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+          />
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-[#10B981] hover:bg-[#0C4A6E] text-white py-5 rounded-xl font-bold text-xl transition disabled:opacity-70"
+          >
+            {loading ? "Création..." : "S'inscrire"}
           </button>
         </form>
+
+        <p className="text-center mt-8 text-gray-600">
+          Déjà membre ?{" "}
+          <a href="/login" className="text-[#0C4A6E] font-bold underline">
+            Se connecter
+          </a>
+        </p>
       </div>
     </div>
   );

@@ -7,8 +7,9 @@ import lombok.Data;
 public class RegisterRequest {
     private String nom;
     private String prenom;
-    private String email;         // optionnel
-    private String telephone;     // optionnel
+    private String email;
+    private String countryCode = "+228"; // défaut Togo
+    private String telephone;
     private String password;
 
     // Méthode pratique pour savoir quel identifiant est utilisé

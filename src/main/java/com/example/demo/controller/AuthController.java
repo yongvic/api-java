@@ -55,7 +55,7 @@ public class AuthController {
         user.setNom(request.getNom());
         user.setPrenom(request.getPrenom());
         user.setEmail(email);           // → NULL si pas fourni
-        user.setTelephone(telephone);   // → NULL si pas fourni
+        user.setTelephone(request.getCountryCode(), request.getTelephone());   // → NULL si pas fourni
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         User saved = userRepository.save(user);
@@ -65,7 +65,7 @@ public class AuthController {
     // ==================== CONNEXION ====================
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        String identifier = request.getIdentifier(); // email ou téléphone
+        String identifier = request.getIdentifier();
 
         if (identifier == null || identifier.isBlank()) {
             return ResponseEntity.badRequest().body("Email ou téléphone requis");
@@ -73,7 +73,6 @@ public class AuthController {
 
         Optional<User> userOpt;
 
-        // On teste d'abord si c'est un email
         if (identifier.contains("@")) {
             userOpt = userRepository.findByEmail(identifier);
         } else {
@@ -90,8 +89,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Identifiant ou mot de passe incorrect");
         }
 
-        String token = jwtUtil.generateToken(user.getEmail() != null ? user.getEmail() : user.getTelephone());
-
+        String token = jwtUtil.generateToken(identifier); // email ou téléphone normalisé
         return ResponseEntity.ok(token);
     }
 }
