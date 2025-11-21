@@ -10,6 +10,7 @@ public class RegisterRequest {
     private String email;
     private String countryCode = "+228"; // défaut Togo
     private String telephone;
+    private Integer countryId;
     private String password;
 
     // Méthode pratique pour savoir quel identifiant est utilisé

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:3000") // OK pour dev Next.js
 @RequestMapping("/api/countries")
 public class CountryController {
 
@@ -15,7 +16,7 @@ public class CountryController {
     private CountryRepository countryRepository;
 
     @GetMapping
-    public List<Country> getAll() {
+    public List<Country> getAllCountries() {
         return countryRepository.findAllByOrderByNameAsc();
     }
 }

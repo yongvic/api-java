@@ -12,7 +12,7 @@ type Country = {
 };
 
 export default function Register() {
-  const [mode, setMode] = useState<"email" | "phone">("email"); // email ou phone
+  const [mode, setMode] = useState<"email" | "phone">("email");
   const [countries, setCountries] = useState<Country[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [form, setForm] = useState({
@@ -26,11 +26,14 @@ export default function Register() {
   const router = useRouter();
 
   useEffect(() => {
-    axios.get("http://localhost:8080/api/countries").then((res) => {
-      setCountries(res.data);
-      const togo = res.data.find((c: Country) => c.code === "+228");
-      if (togo) setSelectedCountry(togo);
-    });
+    axios
+      .get("http://localhost:8080/api/countries")
+      .then((res) => {
+        setCountries(res.data);
+        const cameroon = res.data.find((c: Country) => c.code === "+237") || res.data[0];
+        setSelectedCountry(cameroon);
+      })
+      .catch(() => console.log("Pays non chargés – mode téléphone désactivé"));
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,12 +50,12 @@ export default function Register() {
       payload.email = form.email.trim();
     } else {
       payload.telephone = form.telephone.trim();
-      payload.countryId = selectedCountry?.id;
+      payload.countryId = selectedCountry?.id || 1; // fallback Cameroun
     }
 
     try {
       await axios.post("http://localhost:8080/api/auth/register", payload);
-      alert("Inscription réussie ! 🎉");
+      alert("Inscription réussie ! Bienvenue sur Investore 🎉");
       router.push("/login");
     } catch (err: any) {
       alert(err.response?.data || "Erreur d'inscription");
@@ -77,7 +80,7 @@ export default function Register() {
         <h1 className="text-5xl font-bold text-center text-[#0C4A6E] mb-4">Investore</h1>
         <p className="text-center text-gray-600 mb-8">Crée ton compte en 30 secondes</p>
 
-        {/* === LES 2 BOUTONS DE CHOIX === */}
+        {/* Toggle Email / Téléphone */}
         <div className="flex justify-center mb-8">
           <button
             onClick={() => setMode("email")}
@@ -113,8 +116,7 @@ export default function Register() {
             />
           </div>
 
-          {/* === FORMULAIRE EMAIL === */}
-          {mode === "email" && (
+          {mode === "email" ? (
             <input
               required
               type="email"
@@ -122,10 +124,7 @@ export default function Register() {
               className="w-full p-4 border-2 rounded-xl focus:border-[#0C4A6E] transition"
               onChange={(e) => setForm({ ...form, email: e.target.value })}
             />
-          )}
-
-          {/* === FORMULAIRE TÉLÉPHONE === */}
-          {mode === "phone" && (
+          ) : (
             <div className="flex gap-3">
               <select
                 value={selectedCountry?.id || ""}
@@ -143,7 +142,7 @@ export default function Register() {
               </select>
               <input
                 required
-                placeholder="91480288"
+                placeholder="690123456"
                 className="flex-1 p-4 border-2 rounded-xl focus:border-[#0C4A6E] transition"
                 onChange={(e) => setForm({ ...form, telephone: e.target.value })}
               />
@@ -153,7 +152,7 @@ export default function Register() {
           <input
             required
             type="password"
-            placeholder="Mot de passe sécurisé"
+            placeholder="Mot de passe"
             className="w-full p-4 border-2 rounded-xl focus:border-[#0C4A6E] transition"
             onChange={(e) => setForm({ ...form, password: e.target.value })}
           />
@@ -163,7 +162,7 @@ export default function Register() {
             disabled={loading}
             className="w-full bg-[#10B981] hover:bg-[#0C4A6E] text-white py-5 rounded-xl font-bold text-xl transition disabled:opacity-70"
           >
-            {loading ? "Création..." : "S'inscrire"}
+            {loading ? "Création..." : "Rejoindre Investore"}
           </button>
         </form>
 

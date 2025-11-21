@@ -13,23 +13,23 @@ import java.util.Date;
 public class JwtUtil {
 
     private final String secret = "monSecretSuperSecret1234567890123456789012345678901234567890";
-    private final long expiration = 1000 * 60 * 60; // 1h
+    private final long expiration = 1000 * 60 * 60; // 1 heure
 
     private SecretKey getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secret);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(String username) {
+    public String generateToken(String identifier) {
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(identifier)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey())
                 .compact();
     }
 
-    public String validateTokenAndGetUsername(String token) {
+    public String validateTokenAndGetIdentifier(String token) {
         try {
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(getSigningKey())
